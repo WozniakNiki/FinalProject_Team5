@@ -1,0 +1,3 @@
+ChocolateChip 2.50
+PeanutButter 3.00
+Snickerdoodle 3.50
