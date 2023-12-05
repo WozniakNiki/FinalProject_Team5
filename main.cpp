@@ -9,39 +9,21 @@
 using namespace std;
 
 //Globals
-const int ARRAY_SIZE = 3;
+const int ARRAY_SIZE = 9;
 
 struct Order 
 {
-    Cookies cookies[ARRAY_SIZE];
-    Cupcakes cupcakes[ARRAY_SIZE];
-    Pies pies[ARRAY_SIZE];
-    int orderTotal;
-
+    Item items[ARRAY_SIZE];
+    int orderTotal; //all items cost together
 };
 
-struct Cookies 
+struct Item 
 {
-    string itemType; //ChocolateChip, PeanutButter, Snickerdoodle
+    string itemCategory; //cookies, cupcakes, pies
+    string itemType;  //snickerdoodle, chocolate, apple for example.
     int quanity;
-    double price; //2.50, 3.00, 3.50
-    int totalCost;
-};
-
-struct Cupcakes
-{
-    string itemType; //Chocolate, Confetti, RedVelvet
-    int quanity;
-    double price; //3.00, 3.50, 4.00
-    int totalCost;
-};
-
-struct Pies
-{
-    string itemType; //Apple, Pecan, KeyLime
-    int quanity;
-    double price; //5.00, 6.00, 7.00
-    int totalCost;
+    double price; //single item price point
+    int totalCost; //total price with the items price x quanity
 };
 
 //main flow with the main menu print out
