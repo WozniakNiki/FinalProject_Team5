@@ -48,7 +48,24 @@ void CurrentOrder(Order order)
 //branch into the add/remove functions
 void EditOrder(Order order)
 {
+    // Input a full string to avoid input overflow
+    string input;
 
+    cout << "Would you like to add or remove items? (a/r)";
+    cin >> input;
+
+    // Check first char
+    if (input[0] == 'a')
+        AddToOrder(order);
+
+    else if (input[0] == 'r')
+        RemoveFromOrder(order);
+
+    // Cancel
+    else {
+        cout << "Unrecognized Command! Canceling edit..." << endl;
+        return;
+    }
 }
 
 //add item(s) to order
