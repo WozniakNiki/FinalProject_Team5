@@ -10,24 +10,28 @@ using namespace std;
 
 //Globals
 const int ARRAY_SIZE = 9;
+const int SETVALUE = 40;
+const int CATEGORIES = 3;
 
 struct Item
 {
-    string itemCategory; //cookies, cupcakes, pies
-    string itemType;  //snickerdoodle, chocolate, apple for example.
-    int quanity;
-    double price; //single item price point
-    int totalCost; //total price with the items price x quanity
+	string itemCategory; //cookies, cupcakes, pies
+	string itemType;  //snickerdoodle, chocolate, apple for example.
+	int quanity;
+	double price; //single item price point
+	int totalCost; //total price with the items price x quanity
 };
 
 struct Order
 {
-    Item items[ARRAY_SIZE];
-    int orderTotal; //all items cost together
+	Item items[ARRAY_SIZE];
+	int orderTotal; //all items cost together
 };
 
 // Function Declarations
-bool ReadFromFile(ifstream& file, Order order);
+char MainMenu();
+char SubMenu();
+Order ReadFromFile(string fileName[3], Order order);
 void CurrentOrder(Order order);
 void EditOrder(Order order);
 void AddToOrder(Order order);
@@ -37,121 +41,245 @@ void Checkout(Order order);
 bool Print(Order order);
 
 //main flow with the main menu print out
-int main()
+//Nicole Wozniak
+int main(int argc, char* argv[])
 {
-    Order order;
+	if (argc < 4)
+	{
+		std::cout << "Error! Not enough files found. Expecting 3!" << endl;
+		return 1;
+	}
+	string fileNames[] = { argv[1] , argv[2], argv[3] };
 
-    Item item1;
-    Item item2;
+	Order order;
+	//Item item1;
+	//Item item2;
 
-    item1.itemCategory = "Cookie";
-    item1.itemType = "Name Example";
-    item2.itemCategory = "Cupcake";
-    item2.itemType = "Test Name";
+	//item1.itemCategory = "Cookie";
+	//item1.itemType = "Name Example";
+	//item2.itemCategory = "Cupcake";
+	//item2.itemType = "Test Name";
 
-    order.items[0] = item1;
-    order.items[1] = item1;
-    order.items[2] = item2;
+	//order.items[0] = item1;
+	//order.items[1] = item1;
+	//order.items[2] = item2;
 
-    EditOrder(order);
+	order = ReadFromFile(fileNames, order);
+	
+	cout << setfill('*') << setw(SETVALUE) << "" << endl;
+	cout << "Welcome to the C Bakery!!" << endl;
+	cout << setfill('*') << setw(SETVALUE) << "" << endl;
 
-    return 0;
+	enum Menu {EDIT = 'e', VIEW = 'v', CHECKOUT = 'c', EXIT = 'x', ADD = 'a', REMOVE = 'r' };
+	char selection;
+
+	selection = MainMenu();
+
+	while (selection != 'x')
+	{
+		switch (selection)
+		{
+		case EDIT:
+			EditOrder(order);
+			selection = MainMenu();
+			break;
+
+		case VIEW:
+			CurrentOrder(order);
+			selection = MainMenu();
+			break;
+
+		case CHECKOUT:
+			Checkout(order);
+			selection = MainMenu();
+			break;
+
+		case EXIT:
+			cout << "Hope to see you again soon! Good bye.";
+			return 0;
+			break;
+
+		default:
+			cout << "An error has occured";
+			break;
+		}
+	}
+	
+	cout << "Hope to see you again soon! Good bye.";
+	return 0;
 }
 
 //takes in three files and prints into proper structs/arrays
-bool ReadFromFile(ifstream& file, Order order)
+//Nicole Wozniak
+Order ReadFromFile(string fileName[3], Order order)
 {
+	ifstream file;
+	for (int i = 0; i < CATEGORIES; i++)
+	{
+		file.open(fileName[i]);
 
-    return true;
+		if (!file.is_open())
+		{
+			std::cout << "Error" << endl;
+		}
+
+		string category = fileName[i];
+
+		switch (i)
+		{
+		case 0:
+			for (int j = 0; j < CATEGORIES; j++)
+			{
+				order.items[j].itemCategory = "Cookies";
+				file >> order.items[j].itemType >> order.items[j].price;
+			}
+			break;
+		case 1:
+			for (int j = 0; j < CATEGORIES; j++)
+			{
+				order.items[j+3].itemCategory = "Cupcakes";
+				file >> order.items[j+3].itemType >> order.items[j+3].price;
+			}
+			break;
+		case 2:
+			for (int j = 0; j < CATEGORIES; j++)
+			{
+				order.items[j+6].itemCategory = "Pies";
+				file >> order.items[j+6].itemType >> order.items[j+6].price;
+			}
+			break;
+		default:
+			break;
+		}
+		file.close();
+	}
+
+	return order;
+}
+
+//Main Menu Readout
+//Nicole Wozniak
+char MainMenu()
+{
+	cout << "What would you like to do?" << endl;
+	cout << "Enter 'e' to edit your order (adding or removing items)." << endl;
+	cout << "Enter 'v' to see your current order." << endl;
+	cout << "Enter 'c' to check out." << endl;
+	cout << "Enter 'x' if you wish to quit." << endl;
+
+	char input;
+	cin >> input;
+	input = tolower(input);
+	return input;
+}
+
+//Submenu for the Edit Order
+//Nicole Wozniak
+char SubMenu()
+{
+	cout << "Enter 'a' to add to your order." << endl;
+	cout << "Enter 'r' to remove from your order." << endl;
+
+	char input;
+	cin >> input;
+	input = tolower(input);
+	return input;
 }
 
 //view current order in the console
+//Nicole Wozniak
 void CurrentOrder(Order order)
 {
 
 }
 
 //branch into the add/remove functions
+//Kaden Jantz
 void EditOrder(Order order)
 {
-    // Input a full string to avoid input overflow
-    string input;
+	// Input a full string to avoid input overflow
+	string input;
 
-    cout << "Would you like to add or remove items? (a/r)";
-    cin >> input;
+	cout << "Would you like to add or remove items? (a/r)";
+	cin >> input;
 
-    // Check first char
-    if (input[0] == 'a')
-        AddToOrder(order);
+	// Check first char
+	if (input[0] == 'a')
+		AddToOrder(order);
 
-    else if (input[0] == 'r')
-        RemoveFromOrder(order);
+	else if (input[0] == 'r')
+		RemoveFromOrder(order);
 
-    // Cancel
-    else {
-        cout << "Unrecognized Command! Canceling edit..." << endl;
-        return;
-    }
+	// Cancel
+	else {
+		cout << "Unrecognized Command! Canceling edit..." << endl;
+		return;
+	}
 }
 
 //add item(s) to order
+//Kaden Jantz
 void AddToOrder(Order order)
 {
-    // Keep track of current catagory
-    string category;
+	// Keep track of current catagory
+	string category;
 
-    // Configure output settings
-    cout << fixed << setprecision(2);
+	// Configure output settings
+	cout << fixed << setprecision(2);
 
-    // Display each item option
-    for (int i = 0; i < ARRAY_SIZE; i++)
-    {
-        Item item = order.items[i];
+	// Display each item option
+	for (int i = 0; i < ARRAY_SIZE; i++)
+	{
+		Item item = order.items[i];
 
-        // Print catagory headers
-        if (category != item.itemCategory) {
-            category = item.itemCategory;
+		// Print catagory headers
+		if (category != item.itemCategory) {
+			category = item.itemCategory;
 
-            cout << category << ":" << endl;
-        }
+			cout << category << ":" << endl;
+		}
 
-        cout << item.itemType << " (" << GetInitials(item.itemType) << ") - $" << item.price << endl;
-    }
+		cout << item.itemType << " (" << GetInitials(item.itemType) << ") - $" << item.price << endl;
+	}
 }
 
 //removing item(s) from order
+//Kaden Jantz
 void RemoveFromOrder(Order order)
 {
 
 }
 
 //get the initials of a name for users
+//Kaden Jantz
 string GetInitials(string name)
 {
-    // Start with first letter
-    string initials = "";
-    initials += name[0];
+	// Start with first letter
+	string initials = "";
+	initials += name[0];
 
-    // Go through every character
-    for (int i = 1; i < name.length() - 1; i++)
-        // Add the one after if one is space
-        if (name[i] == ' ')
-        {
-            i++;
-            initials += name[i];
-        }
+	// Go through every character
+	for (int i = 1; i < name.length() - 1; i++)
+		// Add the one after if one is space
+		if (name[i] == ' ')
+		{
+			i++;
+			initials += name[i];
+		}
 
-    return initials;
+	return initials;
 }
 
 //Check out the current order, calculate totals, lead into PrintFucntion
+//Md Jehin
 void Checkout(Order order)
 {
 
 }
 
 //print order to console with totals, and print to order.txt file
+//Md Jehin
 bool Print(Order order)
 {
-
+	return true;
 }
