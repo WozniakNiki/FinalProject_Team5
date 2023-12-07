@@ -196,12 +196,21 @@ char SubMenu()
 //Nicole Wozniak
 void CurrentOrder(Order order)
 {
+	string category;
 	for (int i = 0; i < ARRAY_SIZE; i++)
 	{
-		cout << order.items[i].quanity << " " << order.items[i].itemType << " " << order.items[i].itemCategory << " at the cost of $" << setprecision(2) << order.items[i].price << " each. For a total of $" << setprecision(2) << order.items[i].totalCost << " for this item." << endl;
+		Item displayItem = order.items[i];
+		
+		if (category != displayItem.itemCategory)
+		{
+			category = displayItem.itemCategory;
+			cout << "\n" << category << ":" << endl;
+		}
+
+		cout << "There are " << order.items[i].quanity << " " << order.items[i].itemType << ". At the price of $" << fixed << setprecision(2) << order.items[i].price << " each. Total for this item is $" << order.items[i].totalCost << endl;
 	}
 
-	cout << "The orders full cost is $" << setprecision(2) << order.orderTotal << endl;
+	cout << "\nThe orders full cost is $" << setprecision(2) << order.orderTotal << endl;
 }
 
 //branch into the add/remove functions
