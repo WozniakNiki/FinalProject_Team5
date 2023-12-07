@@ -18,14 +18,14 @@ struct Item
 	string itemCategory; //cookies, cupcakes, pies
 	string itemType;  //snickerdoodle, chocolate, apple for example.
 	int quanity;
-	double price; //single item price point
-	int totalCost; //total price with the items price x quanity
+	float price; //single item price point
+	float totalCost; //total price with the items price x quanity
 };
 
 struct Order
 {
 	Item items[ARRAY_SIZE];
-	int orderTotal; //all items cost together
+	float orderTotal; //all items cost together
 };
 
 // Function Declarations
@@ -132,6 +132,8 @@ Order ReadFromFile(string fileName[3], Order order)
 			{
 				order.items[j].itemCategory = "Cookies";
 				file >> order.items[j].itemType >> order.items[j].price;
+				order.items[j].quanity = 0;
+				order.items[j].totalCost = 0.00;
 			}
 			break;
 		case 1:
@@ -139,6 +141,8 @@ Order ReadFromFile(string fileName[3], Order order)
 			{
 				order.items[j+3].itemCategory = "Cupcakes";
 				file >> order.items[j+3].itemType >> order.items[j+3].price;
+				order.items[j+3].quanity = 0;
+				order.items[j+3].totalCost = 0.00;
 			}
 			break;
 		case 2:
@@ -146,6 +150,8 @@ Order ReadFromFile(string fileName[3], Order order)
 			{
 				order.items[j+6].itemCategory = "Pies";
 				file >> order.items[j+6].itemType >> order.items[j+6].price;
+				order.items[j+6].quanity = 0;
+				order.items[j+6].totalCost = 0.00;
 			}
 			break;
 		default:
@@ -161,7 +167,7 @@ Order ReadFromFile(string fileName[3], Order order)
 //Nicole Wozniak
 char MainMenu()
 {
-	cout << "What would you like to do?" << endl;
+	cout << "\nWhat would you like to do?" << endl;
 	cout << "Enter 'e' to edit your order (adding or removing items)." << endl;
 	cout << "Enter 'v' to see your current order." << endl;
 	cout << "Enter 'c' to check out." << endl;
@@ -190,7 +196,12 @@ char SubMenu()
 //Nicole Wozniak
 void CurrentOrder(Order order)
 {
+	for (int i = 0; i < ARRAY_SIZE; i++)
+	{
+		cout << order.items[i].quanity << " " << order.items[i].itemType << " " << order.items[i].itemCategory << " at the cost of $" << setprecision(2) << order.items[i].price << " each. For a total of $" << setprecision(2) << order.items[i].totalCost << " for this item." << endl;
+	}
 
+	cout << "The orders full cost is $" << setprecision(2) << order.orderTotal << endl;
 }
 
 //branch into the add/remove functions
