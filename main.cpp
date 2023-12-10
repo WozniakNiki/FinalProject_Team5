@@ -38,7 +38,7 @@ void AddToOrder(Order order);
 void RemoveFromOrder(Order order);
 string GetInitials(string name);
 void Checkout(Order order);
-bool Print(Order order);
+bool Print(Order order, const string& filename);
 
 //main flow with the main menu print out
 //Nicole Wozniak
@@ -70,7 +70,7 @@ int main(int argc, char* argv[])
 	cout << "Welcome to the C Bakery!!" << endl;
 	cout << setfill('*') << setw(SETVALUE) << "" << endl;
 
-	enum Menu {EDIT = 'e', VIEW = 'v', CHECKOUT = 'c', EXIT = 'x', ADD = 'a', REMOVE = 'r' };
+	enum Menu {EDIT = 'e', VIEW = 'v', CHECKOUT = 'c', EXIT = 'x', ADD = 'a', REMOVE = 'r' }; //Can remove add/remove if needed later
 	char selection;
 
 	selection = MainMenu();
@@ -101,6 +101,7 @@ int main(int argc, char* argv[])
 
 		default:
 			cout << "An error has occured";
+			return 1;
 			break;
 		}
 	}
@@ -113,48 +114,52 @@ int main(int argc, char* argv[])
 //Nicole Wozniak
 Order ReadFromFile(string fileName[3], Order order)
 {
+	int categoryOneCounter = 0, categoryTwocounter = 0; //This will remove magic numbers and open it up to having an uneven amount of items in each category.
 	ifstream file;
 	for (int i = 0; i < CATEGORIES; i++)
 	{
+		
 		file.open(fileName[i]);
 
 		if (!file.is_open())
 		{
-			std::cout << "Error" << endl;
+			std::cout << "An Error has occured!" << endl;
 		}
-
-		string category = fileName[i];
-
+		int line = 0;
 		switch (i)
 		{
-		case 0:
+		case 0: //Cookies - first file
 			for (int j = 0; j < CATEGORIES; j++)
 			{
 				order.items[j].itemCategory = "Cookies";
 				file >> order.items[j].itemType >> order.items[j].price;
 				order.items[j].quanity = 0;
 				order.items[j].totalCost = 0.00;
+				categoryOneCounter++;
 			}
 			break;
-		case 1:
+		case 1: //Cupcakes - second file
+			categoryTwocounter = categoryOneCounter;
 			for (int j = 0; j < CATEGORIES; j++)
 			{
-				order.items[j+3].itemCategory = "Cupcakes";
-				file >> order.items[j+3].itemType >> order.items[j+3].price;
-				order.items[j+3].quanity = 0;
-				order.items[j+3].totalCost = 0.00;
+				order.items[j+ categoryOneCounter].itemCategory = "Cupcakes";
+				file >> order.items[j+ categoryOneCounter].itemType >> order.items[j+ categoryOneCounter].price;
+				order.items[j+ categoryOneCounter].quanity = 0;
+				order.items[j+ categoryOneCounter].totalCost = 0.00;
+				categoryTwocounter++;
 			}
 			break;
-		case 2:
+		case 2: //Pies - third file
 			for (int j = 0; j < CATEGORIES; j++)
 			{
-				order.items[j+6].itemCategory = "Pies";
-				file >> order.items[j+6].itemType >> order.items[j+6].price;
-				order.items[j+6].quanity = 0;
-				order.items[j+6].totalCost = 0.00;
+				order.items[j +categoryTwocounter].itemCategory = "Pies";
+				file >> order.items[j + categoryTwocounter].itemType >> order.items[j + categoryTwocounter].price;
+				order.items[j + categoryTwocounter].quanity = 0;
+				order.items[j + categoryTwocounter].totalCost = 0.00;
 			}
 			break;
 		default:
+			std::cout << "An Error has occured!" << endl;
 			break;
 		}
 		file.close();
@@ -292,14 +297,57 @@ string GetInitials(string name)
 
 //Check out the current order, calculate totals, lead into PrintFucntion
 //Md Jehin
-void Checkout(Order order)
+void Checkout(Order& order)
 {
+	order.orderTotal = 0.0;
 
+	// Calculate the total cost for each item and update the order total
+	for (int i = 0; i < ARRAY_SIZE; i++)
+	{
+		order.items[i].totalCost = order.items[i].quanity * order.items[i].price;
+		order.orderTotal += order.items[i].totalCost;
+	}
+
+	// Print the order details
+	Print(order, "order.txt");
+
+	// Reset quantities to 0 after checkout
+	for (int i = 0; i < ARRAY_SIZE; i++)
+	{
+		order.items[i].quanity = 0;
+	}
+
+	cout << "Your current order total is: $" << setprecision(2) << order.orderTotal << endl;
 }
 
-//print order to console with totals, and print to order.txt file
-//Md Jehin
-bool Print(Order order)
+// Print order to console with totals, and print to order.txt file
+// Md Jehin
+bool Print(Order order, const string& filename)
 {
+	// Print the order details to the console
+	CurrentOrder(order);
+
+	// Write the order details to the specified file
+	ofstream outFile(filename);
+
+	if (!outFile.is_open())
+	{
+		cout << "Error writing to file." << endl;
+		return false;
+	}
+
+	// Write the order details to the file
+	for (int i = 0; i < ARRAY_SIZE; i++)
+	{
+		outFile << order.items[i].quanity << " " << order.items[i].itemType << " " << order.items[i].itemCategory
+			<< " at the cost of $" << setprecision(2) << order.items[i].price << " each. For a total of $"
+			<< setprecision(2) << order.items[i].totalCost << " for this item." << endl;
+	}
+
+	outFile << "The order's full cost is $" << setprecision(2) << order.orderTotal << endl;
+
+	cout << "Order details have been saved to '" << filename << "'." << endl;
+
+	outFile.close();
 	return true;
 }
