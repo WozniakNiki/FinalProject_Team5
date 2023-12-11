@@ -25,7 +25,7 @@ struct Item
 struct Order
 {
 	Item items[ARRAY_SIZE];
-	float orderTotal; //all items cost together
+	float orderTotal = 0; //all items cost together
 };
 
 // Function Declarations
@@ -33,11 +33,12 @@ char MainMenu();
 char SubMenu();
 Order ReadFromFile(string fileName[3], Order order);
 void CurrentOrder(Order order);
-void EditOrder(Order order);
-void AddToOrder(Order order);
-void RemoveFromOrder(Order order);
+void EditOrder(Order& order);
+void AddToOrder(Order& order);
+void RemoveFromOrder(Order& order);
 string GetInitials(string name);
-void Checkout(Order order);
+string LowerString(string name);
+void Checkout(Order& order);
 bool Print(Order order, const string& filename);
 
 //main flow with the main menu print out
@@ -52,17 +53,6 @@ int main(int argc, char* argv[])
 	string fileNames[] = { argv[1] , argv[2], argv[3] };
 
 	Order order;
-	//Item item1;
-	//Item item2;
-
-	//item1.itemCategory = "Cookie";
-	//item1.itemType = "Name Example";
-	//item2.itemCategory = "Cupcake";
-	//item2.itemType = "Test Name";
-
-	//order.items[0] = item1;
-	//order.items[1] = item1;
-	//order.items[2] = item2;
 
 	order = ReadFromFile(fileNames, order);
 	
@@ -191,10 +181,11 @@ char SubMenu()
 	cout << "Enter 'a' to add to your order." << endl;
 	cout << "Enter 'r' to remove from your order." << endl;
 
-	char input;
+	// Input String to avoid overflow
+	string input;
 	cin >> input;
-	input = tolower(input);
-	return input;
+
+	return tolower(input[0]);
 }
 
 //view current order in the console
@@ -220,19 +211,16 @@ void CurrentOrder(Order order)
 
 //branch into the add/remove functions
 //Kaden Jantz
-void EditOrder(Order order)
+void EditOrder(Order& order)
 {
-	// Input a full string to avoid input overflow
-	string input;
-
-	cout << "Would you like to add or remove items? (a/r)";
-	cin >> input;
+	// Get submenu result
+	char input = SubMenu();
 
 	// Check first char
-	if (input[0] == 'a')
+	if (input == 'a')
 		AddToOrder(order);
 
-	else if (input[0] == 'r')
+	else if (input == 'r')
 		RemoveFromOrder(order);
 
 	// Cancel
@@ -244,7 +232,7 @@ void EditOrder(Order order)
 
 //add item(s) to order
 //Kaden Jantz
-void AddToOrder(Order order)
+void AddToOrder(Order& order)
 {
 	// Keep track of current catagory
 	string category;
@@ -264,35 +252,164 @@ void AddToOrder(Order order)
 			cout << category << ":" << endl;
 		}
 
-		cout << item.itemType << " (" << GetInitials(item.itemType) << ") - $" << item.price << endl;
+		// Print with price and initials
+		cout << item.itemType << " (Initials: " << GetInitials(item.itemType) << ") - $" << item.price << endl;
 	}
+
+	// Request item
+	cout << "Please enter the initials of the item you would like to add: " << endl;
+	string initials;
+	cin >> initials;
+
+	// Convert to lower case
+	initials = LowerString(initials);
+
+	// Identify the item
+	int itemNum = 0;
+	Item item;
+	for (int i = 0; i < ARRAY_SIZE; i++)
+		if (LowerString(GetInitials(order.items[i].itemType)) == initials)
+		{
+			itemNum = i;
+			item = order.items[i];
+			break;
+		}
+
+	// Check to make sure item was chosen
+	if (item.itemType.empty())
+	{
+		cout << "Unrecognized item! Canceling edit..." << endl;
+		return;
+	}
+
+	// Request Quantity
+	int quantity = 0;
+
+	cout << "Please enter the number of " << item.itemType << " " << item.itemCategory << " you would like to add:" << endl;
+
+	cin >> quantity;
+
+	// Add to selected item's quantity
+	item.quanity += quantity;
+
+	// Make sure quantity was not reduced below zero by a negative
+	if (item.quanity < 0)
+		item.quanity = 0;
+
+	// Adjust order total based on change
+	float priceChange = (item.quanity - order.items[itemNum].quanity) * item.price;
+
+	item.totalCost += priceChange;
+	order.orderTotal += priceChange;
+
+	// Apply item to order
+	order.items[itemNum] = item;
+
+	// Report success to player
+	cout << "You now have " << item.quanity << " of " << item.itemType << " " << item.itemCategory << " in your order" << endl;
 }
 
 //removing item(s) from order
 //Kaden Jantz
-void RemoveFromOrder(Order order)
+void RemoveFromOrder(Order& order)
 {
+	// Keep track of current catagory
+	string category;
 
+	// Configure output settings
+	cout << fixed << setprecision(2);
+
+	// Display each item in the current order
+	cout << "Your order includes: " << endl;
+	for (int i = 0; i < ARRAY_SIZE; i++)
+	{
+		Item item = order.items[i];
+
+		// Skip if none of this are in the current order
+		if (item.quanity <= 0)
+			continue;
+
+		// Print catagory headers
+		if (category != item.itemCategory) {
+			category = item.itemCategory;
+
+			cout << category << ":" << endl;
+		}
+
+		// Print with price and initials
+		cout << item.quanity << " " << item.itemType << " (Initials: " << GetInitials(item.itemType) << ") - $" << item.price << " ea." << endl;
+	}
+
+	// Request item
+	cout << "Please enter the initials of the item you would like to remove from the order: " << endl;
+	string initials;
+	cin >> initials;
+
+	// Convert to lower case
+	initials = LowerString(initials);
+
+	// Identify the item
+	int itemNum = 0;
+	Item item;
+	for (int i = 0; i < ARRAY_SIZE; i++)
+		if (LowerString(GetInitials(order.items[i].itemType)) == initials)
+		{
+			itemNum = i;
+			item = order.items[i];
+			break;
+		}
+
+	// Check to make sure item was chosen
+	if (item.itemType.empty())
+	{
+		cout << "Unrecognized item! Canceling edit..." << endl;
+		return;
+	}
+
+	// Remove all of selected item
+	item.quanity = 0;
+
+	// Adjust order total based on change
+	order.orderTotal -= item.totalCost;
+	item.totalCost += 0;
+
+	// Apply item to order
+	order.items[itemNum] = item;
+
+	// Report success to player
+	cout << "Removed all " << item.itemType << " " << item.itemCategory << " from your order" << endl;
 }
 
 //get the initials of a name for users
 //Kaden Jantz
 string GetInitials(string name)
 {
-	// Start with first letter
+	// Start with first two letters
 	string initials = "";
 	initials += name[0];
+	initials += name[1];
 
 	// Go through every character
-	for (int i = 1; i < name.length() - 1; i++)
-		// Add the one after if one is space
-		if (name[i] == ' ')
+	for (int i = 2; i < name.length(); i++)
+		// Add it if it is capitalized
+		if (isupper(name[i]))
 		{
-			i++;
 			initials += name[i];
 		}
 
 	return initials;
+}
+
+//convert an entire string to lowercase
+//Kaden Jantz
+string LowerString(string start)
+{
+	string end = "";
+
+	for (int i = 0; i < start.length(); i++)
+		end += tolower(start[i]);
+
+	return end;
 }
 
 //Check out the current order, calculate totals, lead into PrintFucntion
@@ -315,7 +432,10 @@ void Checkout(Order& order)
 	for (int i = 0; i < ARRAY_SIZE; i++)
 	{
 		order.items[i].quanity = 0;
+		order.items[i].totalCost = 0;
 	}
+
+	order.orderTotal = 0;
 
 	cout << "Your current order total is: $" << setprecision(2) << order.orderTotal << endl;
 }
